@@ -38,7 +38,7 @@ db.query(sql, param).then(function(results){
     console.log(results);
 });
 
-var sql = "UPDATE topic SET title=:title WHERE @rid=:rid";
+var sql = "UPDATE topic SET title= :title WHERE @rid= :rid";
 db.query(sql, {params:{title:'Exptessjs', rid:'#21:0'}}).then(function(result){
     console.log(result);                                                             
 });
