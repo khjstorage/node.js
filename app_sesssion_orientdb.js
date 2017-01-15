@@ -13,15 +13,6 @@ app.use(session({
     })
 }));
 
-app.get('/count', function(req, res){
-    if(req.session.count ){
-        req.session.count++;
-    }else{
-        req.session.count = 1;
-    }
-    res.send('count : ' + req.session.count); 
-});
-
 app.get('/auth/login', function(req, res){
     var output = `
     <form action="/auth/login" method="post">
