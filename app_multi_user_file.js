@@ -1,9 +1,12 @@
 var express = require('express');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
-//var md5 = require('md5'); //md5 더이상 암호화로 안쓰임
-//var salt = '#F$%gf4g4312'; //salt 값을 공통으로 쓰면 한개 풀리면 나머지도 똑같음
-var sha256 = require('sha256');
+//var md5 = require('md5'); 
+//var salt = '#F$%gf4g4312'; 
+//var sha256 = require('sha256');
+var bkfd2Password = require("pbkdf2-password");
+var hasher = bkfd2Password();
+
 var app = express();
 var bodyParser = require('body-parser');
 
@@ -17,16 +20,9 @@ app.use(session({
 
 var users = [
     {
-        username:'khjzzm',
-        password:'863f0a4b60d4f03e39165f3e39607f9d48c34477f693759658761c8a4f8382de',
-        salt:'2342@343#$$#', 
+        username:'khjzzm',       password:'xqiKW7JGzqh7O0LNBy3zhb0Rm80CAg0A0Uz+Vz0u6O4Ia3gGxNYKcog7l41QkIyfP2axJxp2QtaP5vU67KHoUTJjF+GjPyHCdwy6b+HJLJ04PmKara33gXf9SRP4ox3+HhlJSjhae1GYIiPRiZwq5oKtujaO0iSdssOC/QyFBJA=',
+        salt:'KtsfxSLrOnz1sYp95H/GMDVJCbM9w5jfsCfMjBLb51jvKolgh9R/5nKJNH38uCwLGrjvTYKxL9WeOQd+GSpMEw==', 
         dispalyName:'Kimhyunjin'
-    },
-    {
-        username:'kim',
-        password:'7aef168959983d39260b5d5e50545afe3b351861703da2fbb5d583b52389df39',
-        salt:'!@#23fef234#',
-        dispalyName:'sh'        
     }
 ];
 
@@ -57,16 +53,23 @@ app.get('/auth/login', function(req, res){
     `;
     res.send(output);
 });
+
 app.post('/auth/login', function(req, res){
     var uname = req.body.username;
     var pwd = req.body.password;
     for(var i=0; i<users.length; i++){
         var user = users[i];
-        if(uname === user.username && sha256(pwd+user.salt) === user.password){
-            req.session.dispalyName = user.dispalyName;
-            return req.session.save(function(){
-                res.redirect('/welcome');
-            });
+        if(uname === user.username){
+            return hasher({password:pwd, salt:user.salt}, function(err, pass, salt, hash){
+                if(hash === user.password){
+                    req.session.dispalyName = user.dispalyName;
+                    req.session.save(function(){
+                        res.redirect('/welcome');
+                    })
+                } else {
+                    res.send('who are you? <a href="/auth/login">login</a>');
+                }
+            }); 
         }
     }
     res.send('who are you? <a href="/auth/login">login</a>');
@@ -89,17 +92,23 @@ app.get('/auth/register', function(req, res){
     `;
     res.send(output); 
 });
+
 app.post('/auth/register', function(req, res){
-    var user = {
-        username:req.body.username,
-        password:sha256(req.body.password),
-        dispalyName:req.body.dispalyName        
-    }
-    users.push(user);
-    req.session.dispalyName = req.body.dispalyName;
-    req.session.save(function(){
-        res.redirect('/welcome');
+    hasher({password:req.body.password}, function(err, pass, salt, hash){
+        var user = {
+            username:req.body.username,
+            password:hash,
+            salt:salt,
+            dispalyName:req.body.dispalyName        
+        };
+        users.push(user);
+        //res.send(users);
+        req.session.dispalyName = req.body.dispalyName;
+        req.session.save(function(){
+            res.redirect('/welcome');
+        });
     });
+
 });
 
 app.listen(3003, function(){
