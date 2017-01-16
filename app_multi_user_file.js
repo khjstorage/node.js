@@ -1,12 +1,13 @@
 var express = require('express');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
-var md5 = require('md5')
-var salt = '#F$%gf4g4312';
+//var md5 = require('md5'); //md5 더이상 암호화로 안쓰임
+//var salt = '#F$%gf4g4312'; //salt 값을 공통으로 쓰면 한개 풀리면 나머지도 똑같음
+var sha256 = require('sha256');
 var app = express();
 var bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
 
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({
     secret: 'eklhajnzczima',
     resave: false,
@@ -17,17 +18,18 @@ app.use(session({
 var users = [
     {
         username:'khjzzm',
-        password:'450dd90d26b7f8c3084d2be02fda28c9',
-        //salt:'',
+        password:'863f0a4b60d4f03e39165f3e39607f9d48c34477f693759658761c8a4f8382de',
+        salt:'2342@343#$$#', 
         dispalyName:'Kimhyunjin'
     },
     {
         username:'kim',
-        password:'897366bbd3209f23fb7e4d692be17b7f',
-        //salt:'',
+        password:'7aef168959983d39260b5d5e50545afe3b351861703da2fbb5d583b52389df39',
+        salt:'!@#23fef234#',
         dispalyName:'sh'        
     }
 ];
+
 app.get('/welcome', function(req, res){
     if(req.session.dispalyName){
         res.send(`
@@ -60,7 +62,7 @@ app.post('/auth/login', function(req, res){
     var pwd = req.body.password;
     for(var i=0; i<users.length; i++){
         var user = users[i];
-        if(uname === user.username && md5(pwd+salt) === user.password){
+        if(uname === user.username && sha256(pwd+user.salt) === user.password){
             req.session.dispalyName = user.dispalyName;
             return req.session.save(function(){
                 res.redirect('/welcome');
@@ -90,7 +92,7 @@ app.get('/auth/register', function(req, res){
 app.post('/auth/register', function(req, res){
     var user = {
         username:req.body.username,
-        password:md5(req.body.password+salt),
+        password:sha256(req.body.password),
         dispalyName:req.body.dispalyName        
     }
     users.push(user);
@@ -99,7 +101,6 @@ app.post('/auth/register', function(req, res){
         res.redirect('/welcome');
     });
 });
-
 
 app.listen(3003, function(){
    console.log('Connected 3003 port!!!') 
