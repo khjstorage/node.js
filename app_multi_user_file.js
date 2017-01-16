@@ -1,6 +1,8 @@
 var express = require('express');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
+var md5 = require('md5')
+var salt = '#F$%gf4g4312';
 var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -15,12 +17,14 @@ app.use(session({
 var users = [
     {
         username:'khjzzm',
-        password:'111',
+        password:'450dd90d26b7f8c3084d2be02fda28c9',
+        //salt:'',
         dispalyName:'Kimhyunjin'
     },
     {
         username:'kim',
-        password:'1212',
+        password:'897366bbd3209f23fb7e4d692be17b7f',
+        //salt:'',
         dispalyName:'sh'        
     }
 ];
@@ -56,7 +60,7 @@ app.post('/auth/login', function(req, res){
     var pwd = req.body.password;
     for(var i=0; i<users.length; i++){
         var user = users[i];
-        if(uname === user.username && pwd === user.password){
+        if(uname === user.username && md5(pwd+salt) === user.password){
             req.session.dispalyName = user.dispalyName;
             return req.session.save(function(){
                 res.redirect('/welcome');
@@ -86,7 +90,7 @@ app.get('/auth/register', function(req, res){
 app.post('/auth/register', function(req, res){
     var user = {
         username:req.body.username,
-        password:req.body.password,
+        password:md5(req.body.password+salt),
         dispalyName:req.body.dispalyName        
     }
     users.push(user);
