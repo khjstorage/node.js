@@ -35,7 +35,6 @@ app.get('/welcome', function(req, res){
             <p><a href="/auth/register">register</a></p>
         `);
     }
-    res.send(req.session);
 });
 
 app.get('/auth/login', function(req, res){

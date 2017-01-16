@@ -14,6 +14,12 @@ app.use(session({
 }));
 
 var salt = '#F$%gf4g4312';
+/*
+var md5 = require('md5');
+var salt = '#F$%gf4g4312';
+var pwd = '111';
+md5(pwd+salt);
+*/
 var users = [
     {
         username:'khjzzm',
@@ -39,7 +45,6 @@ app.get('/welcome', function(req, res){
             <p><a href="/auth/register">register</a></p>
         `);
     }
-    res.send(req.session);
 });
 
 app.get('/auth/login', function(req, res){

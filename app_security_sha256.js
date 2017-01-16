@@ -13,6 +13,13 @@ app.use(session({
     store: new FileStore()
 }));
 
+/*
+var sha256 = require('sha256');
+var salt = '';
+var pwd = '111';
+sha256(pwd+salt);
+*/
+
 var users = [
     {
         username:'khjzzm',
@@ -41,7 +48,6 @@ app.get('/welcome', function(req, res){
             <p><a href="/auth/register">register</a></p>
         `);
     }
-    res.send(req.session);
 });
 
 app.get('/auth/login', function(req, res){
@@ -91,12 +97,15 @@ app.get('/auth/register', function(req, res){
 
 //회원가입할때 salt값 지정 해주고 push 해야함.
 app.post('/auth/register', function(req, res){
+    var salt = 'random';
     var user = {
         username:req.body.username,
-        password:sha256(req.body.password),
+        password:sha256(req.body.password+salt),
+        salt:salt,
         dispalyName:req.body.dispalyName        
     }
     users.push(user);
+    //res.send(users);
     req.session.dispalyName = req.body.dispalyName;
     req.session.save(function(){
         res.redirect('/welcome');
