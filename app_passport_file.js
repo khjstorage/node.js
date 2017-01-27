@@ -18,7 +18,7 @@ app.use(session({
     store:new FileStore()
 }));
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session()); //로그인 세션을 쓰겠다 앞에서 세션 미들웨어를 설정하고 써야함
 
 app.get('/auth/logout', function(req, res){
     req.logout();
@@ -44,15 +44,15 @@ app.get('/welcome', function(req, res){
 
 passport.serializeUser(function(user, done) {
     console.log('serializeUser', user);
-    done(null, user.username);
+    done(null, user.username); //세션에 user.usernmame을 저장 딱 한번 user.username이 deserializeUser 첫번쨰 인자로 전달
 });
 
-passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(id, done) { //페이지가 열릴 때마다 호출
     console.log('deserializeUser', id);
     for(var i=0; i<users.length; i++){
         var user = users[i];
         if(user.username === id){
-            return done(null, user);
+            return done(null, user); //req.user 패스포트에 의해서 추가
         }
     }
 });
@@ -75,7 +75,7 @@ passport.use(new LocalStrategy(
             }
         }
         done(null, false);
-        res.send('who are you? <a href="/auth/login">login</a>');        
+        //res.send('who are you? <a href="/auth/login">login</a>');        
     }
 ));
 
@@ -94,6 +94,7 @@ app.post(
             });
         }
 );
+
 
 
 var users = [
